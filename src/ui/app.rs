@@ -3848,8 +3848,8 @@ impl App {
             ]),
             Line::from(""),
             Line::from(vec![
-                Span::styled("Floor ", Style::default().fg(Color::DarkGray)),
-                Span::styled(format!("{}", game.floor()), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                Span::styled("Floor ", Style::default().fg(Color::Gray)),
+                Span::styled(format!("{}", game.floor()), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
             ]),
             Line::from(Span::styled(
                 game.biome().name(),
@@ -4679,7 +4679,7 @@ impl App {
         let effective_max_mp = mana.max + eq_mp;
         let eff_str = base_stats.strength + eq_str;
         let eff_dex = base_stats.dexterity + eq_dex;
-        let eff_int = base_stats.intelligence + eq_int;
+        let _eff_int = base_stats.intelligence + eq_int;
         let eff_vit = base_stats.vitality + eq_vit;
         let total_crit = crit_chance(eff_dex) + crit_bonus;
         let total_dodge = dodge_chance(eff_dex);
@@ -4701,14 +4701,15 @@ impl App {
         let gold_find = equipment.as_ref().map(|e| e.equipment.stat_bonus(AffixType::GoldFind)).unwrap_or(0);
         let magic_find = equipment.as_ref().map(|e| e.equipment.stat_bonus(AffixType::MagicFind)).unwrap_or(0);
 
-        // === TWO ROW LAYOUT ===
-        // Top: Stats | Bottom: Equipment
+        // === THREE ROW LAYOUT ===
+        // Row 1: Hero stats | Row 2: Combat Stats | Row 3: Equipment/Skills + Details
         let rows = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(1),   // Help bar
-                Constraint::Length(14),  // Top row (stats)
-                Constraint::Min(10),     // Bottom row (equipment)
+                Constraint::Length(9),   // Top row (hero stats)
+                Constraint::Length(6),   // Combat stats row
+                Constraint::Min(10),     // Bottom row (equipment/skills + details)
             ])
             .split(inner);
 
@@ -4727,250 +4728,231 @@ impl App {
         ]);
         frame.render_widget(Paragraph::new(help_text).alignment(ratatui::layout::Alignment::Center), rows[0]);
 
-        // === TOP ROW: Level | Vitals | Attributes | Combat Stats ===
+        // === TOP ROW: Level | Vitals | Attributes ===
         let top_cols = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Length(16),  // Level/XP
                 Constraint::Length(20),  // Vitals
-                Constraint::Length(22),  // Attributes
-                Constraint::Min(30),     // Combat Stats
+                Constraint::Min(22),     // Attributes
             ])
             .split(rows[1]);
 
-        // --- LEVEL/XP COLUMN ---
+        // --- LEVEL/XP COLUMN --- (14 chars wide)
         let mut level_lines: Vec<Line> = Vec::new();
         level_lines.push(Line::from(Span::styled("┌─ HERO ─────┐", Style::default().fg(Color::Cyan))));
         level_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::Cyan)),
-            Span::styled("★ ", Style::default().fg(Color::Yellow)),
-            Span::styled(format!("Level {:>2}", xp.level), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
-            Span::styled("  │", Style::default().fg(Color::Cyan)),
+            Span::styled("│", Style::default().fg(Color::Cyan)),
+            Span::styled(" ★ ", Style::default().fg(Color::Yellow)),
+            Span::styled(format!("Lv.{:<3}", xp.level), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+            Span::styled("   │", Style::default().fg(Color::Cyan)),
         ]));
         level_lines.push(Line::from(Span::styled("├────────────┤", Style::default().fg(Color::Cyan))));
 
         let xp_pct = xp.current_xp as f32 / xp.xp_to_next as f32;
-        let xp_filled = (8.0 * xp_pct).round() as usize;
+        let xp_filled = (10.0 * xp_pct).round() as usize;
         level_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::Cyan)),
+            Span::styled("│", Style::default().fg(Color::Cyan)),
             Span::styled("█".repeat(xp_filled), Style::default().fg(Color::Cyan)),
-            Span::styled("░".repeat(8 - xp_filled), Style::default().fg(Color::DarkGray)),
-            Span::styled("   │", Style::default().fg(Color::Cyan)),
+            Span::styled("░".repeat(10 - xp_filled), Style::default().fg(Color::DarkGray)),
+            Span::styled(" │", Style::default().fg(Color::Cyan)),
         ]));
         level_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::Cyan)),
-            Span::styled(format!("{:>4}/{:<4}", xp.current_xp, xp.xp_to_next), Style::default().fg(Color::DarkGray)),
-            Span::styled(" │", Style::default().fg(Color::Cyan)),
+            Span::styled("│", Style::default().fg(Color::Cyan)),
+            Span::styled(format!("{:>5}/{:<5}", xp.current_xp, xp.xp_to_next), Style::default().fg(Color::DarkGray)),
+            Span::styled("│", Style::default().fg(Color::Cyan)),
         ]));
         level_lines.push(Line::from(Span::styled("└────────────┘", Style::default().fg(Color::Cyan))));
 
         if stat_points > 0 {
-            level_lines.push(Line::from(""));
             level_lines.push(Line::from(vec![
-                Span::styled(" ✦ ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                Span::styled(format!("{} PTS", stat_points), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+                Span::styled("  ✦ ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+                Span::styled(format!("{} points", stat_points), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
             ]));
         }
 
         frame.render_widget(Paragraph::new(level_lines), top_cols[0]);
 
-        // --- VITALS COLUMN ---
+        // --- VITALS COLUMN --- (18 chars wide)
         let mut vitals_lines: Vec<Line> = Vec::new();
         vitals_lines.push(Line::from(Span::styled("┌─ VITALS ───────┐", Style::default().fg(Color::Red))));
 
-        // HP
+        // HP bar
         let hp_pct = health.current as f32 / effective_max_hp as f32;
         let hp_color = if hp_pct > 0.6 { Color::Green } else if hp_pct > 0.3 { Color::Yellow } else { Color::Red };
         let hp_filled = (10.0 * hp_pct).round() as usize;
         vitals_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::Red)),
+            Span::styled("│", Style::default().fg(Color::Red)),
             Span::styled("HP ", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
             Span::styled("█".repeat(hp_filled), Style::default().fg(hp_color)),
             Span::styled("░".repeat(10 - hp_filled), Style::default().fg(Color::DarkGray)),
-            Span::styled(" │", Style::default().fg(Color::Red)),
+            Span::styled("   │", Style::default().fg(Color::Red)),
         ]));
+        // HP numbers
+        let hp_str = format!("{:>3}/{:<3}", health.current, effective_max_hp);
+        let hp_bonus = if eq_hp > 0 { format!("+{:<2}", eq_hp) } else { "   ".to_string() };
         vitals_lines.push(Line::from(vec![
-            Span::styled("│    ", Style::default().fg(Color::Red)),
-            Span::styled(format!("{:>3}/{:<3}", health.current, effective_max_hp), Style::default().fg(Color::White)),
-            if eq_hp > 0 { Span::styled(format!("+{}", eq_hp), Style::default().fg(Color::Green)) } else { Span::raw("") },
-            Span::styled("    │", Style::default().fg(Color::Red)),
+            Span::styled("│   ", Style::default().fg(Color::Red)),
+            Span::styled(hp_str, Style::default().fg(Color::White)),
+            Span::styled(hp_bonus, Style::default().fg(Color::Green)),
+            Span::styled("  │", Style::default().fg(Color::Red)),
         ]));
 
-        // MP
+        // MP bar
         let mp_pct = mana.current as f32 / effective_max_mp as f32;
         let mp_filled = (10.0 * mp_pct).round() as usize;
         vitals_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::Red)),
+            Span::styled("│", Style::default().fg(Color::Red)),
             Span::styled("MP ", Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD)),
             Span::styled("█".repeat(mp_filled), Style::default().fg(Color::Blue)),
             Span::styled("░".repeat(10 - mp_filled), Style::default().fg(Color::DarkGray)),
-            Span::styled(" │", Style::default().fg(Color::Red)),
+            Span::styled("   │", Style::default().fg(Color::Red)),
         ]));
+        // MP numbers
+        let mp_str = format!("{:>3}/{:<3}", mana.current, effective_max_mp);
+        let mp_bonus = if eq_mp > 0 { format!("+{:<2}", eq_mp) } else { "   ".to_string() };
         vitals_lines.push(Line::from(vec![
-            Span::styled("│    ", Style::default().fg(Color::Red)),
-            Span::styled(format!("{:>3}/{:<3}", mana.current, effective_max_mp), Style::default().fg(Color::White)),
-            if eq_mp > 0 { Span::styled(format!("+{}", eq_mp), Style::default().fg(Color::Green)) } else { Span::raw("") },
-            Span::styled("    │", Style::default().fg(Color::Red)),
+            Span::styled("│   ", Style::default().fg(Color::Red)),
+            Span::styled(mp_str, Style::default().fg(Color::White)),
+            Span::styled(mp_bonus, Style::default().fg(Color::Green)),
+            Span::styled("  │", Style::default().fg(Color::Red)),
         ]));
 
-        // SP
+        // SP bar
         let sp_pct = stamina.current as f32 / stamina.max as f32;
         let sp_filled = (10.0 * sp_pct).round() as usize;
         vitals_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::Red)),
+            Span::styled("│", Style::default().fg(Color::Red)),
             Span::styled("SP ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
             Span::styled("█".repeat(sp_filled), Style::default().fg(Color::Yellow)),
             Span::styled("░".repeat(10 - sp_filled), Style::default().fg(Color::DarkGray)),
-            Span::styled(" │", Style::default().fg(Color::Red)),
+            Span::styled("   │", Style::default().fg(Color::Red)),
         ]));
+        // SP numbers
         vitals_lines.push(Line::from(vec![
-            Span::styled("│    ", Style::default().fg(Color::Red)),
+            Span::styled("│   ", Style::default().fg(Color::Red)),
             Span::styled(format!("{:>3}/{:<3}", stamina.current, stamina.max), Style::default().fg(Color::White)),
-            Span::styled("        │", Style::default().fg(Color::Red)),
+            Span::styled("     │", Style::default().fg(Color::Red)),
         ]));
-        vitals_lines.push(Line::from(Span::styled("└─────────────────┘", Style::default().fg(Color::Red))));
+        vitals_lines.push(Line::from(Span::styled("└────────────────┘", Style::default().fg(Color::Red))));
 
         frame.render_widget(Paragraph::new(vitals_lines), top_cols[1]);
 
-        // --- ATTRIBUTES COLUMN ---
+        // --- ATTRIBUTES COLUMN --- (21 chars wide)
         let mut attr_lines: Vec<Line> = Vec::new();
         let attr_border = if stat_points > 0 { Color::Yellow } else { Color::DarkGray };
         attr_lines.push(Line::from(Span::styled("┌─ ATTRIBUTES ──────┐", Style::default().fg(attr_border))));
 
-        let stat_row = |key: &str, name: &str, base: i32, bonus: i32, color: Color, has_pts: bool| -> Line<'static> {
+        let stat_row = |key: &str, name: &str, base: i32, bonus: i32, color: Color, border: Color, has_pts: bool| -> Line<'static> {
             let key_span = if has_pts {
                 Span::styled(format!("[{}]", key), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
             } else {
                 Span::styled("   ", Style::default())
             };
             let total = base + bonus;
-            if bonus > 0 {
-                Line::from(vec![
-                    Span::styled("│ ", Style::default().fg(attr_border)),
-                    key_span,
-                    Span::styled(format!(" {} ", name), Style::default().fg(Color::Gray)),
-                    Span::styled(format!("{:>2}", total), Style::default().fg(color).add_modifier(Modifier::BOLD)),
-                    Span::styled(format!(" (+{})", bonus), Style::default().fg(Color::Green)),
-                    Span::styled("    │", Style::default().fg(attr_border)),
-                ])
+            let bonus_str = if bonus > 0 {
+                format!("(+{:<2})", bonus)
             } else {
-                Line::from(vec![
-                    Span::styled("│ ", Style::default().fg(attr_border)),
-                    key_span,
-                    Span::styled(format!(" {} ", name), Style::default().fg(Color::Gray)),
-                    Span::styled(format!("{:>2}", total), Style::default().fg(color).add_modifier(Modifier::BOLD)),
-                    Span::styled("          │", Style::default().fg(attr_border)),
-                ])
-            }
+                "     ".to_string()
+            };
+            Line::from(vec![
+                Span::styled("│", Style::default().fg(border)),
+                key_span,
+                Span::styled(format!(" {} ", name), Style::default().fg(Color::Gray)),
+                Span::styled(format!("{:>2}", total), Style::default().fg(color).add_modifier(Modifier::BOLD)),
+                Span::styled(" ", Style::default()),
+                Span::styled(bonus_str, Style::default().fg(Color::Green)),
+                Span::styled("  │", Style::default().fg(border)),
+            ])
         };
 
         let has_pts = stat_points > 0;
-        attr_lines.push(stat_row("1", "STR", base_stats.strength, eq_str, Color::Red, has_pts));
-        attr_lines.push(stat_row("2", "DEX", base_stats.dexterity, eq_dex, Color::Green, has_pts));
-        attr_lines.push(stat_row("3", "INT", base_stats.intelligence, eq_int, Color::Blue, has_pts));
-        attr_lines.push(stat_row("4", "VIT", base_stats.vitality, eq_vit, Color::Yellow, has_pts));
-        attr_lines.push(Line::from(Span::styled("└────────────────────┘", Style::default().fg(attr_border))));
+        attr_lines.push(stat_row("1", "STR", base_stats.strength, eq_str, Color::Red, attr_border, has_pts));
+        attr_lines.push(stat_row("2", "DEX", base_stats.dexterity, eq_dex, Color::Green, attr_border, has_pts));
+        attr_lines.push(stat_row("3", "INT", base_stats.intelligence, eq_int, Color::Blue, attr_border, has_pts));
+        attr_lines.push(stat_row("4", "VIT", base_stats.vitality, eq_vit, Color::Yellow, attr_border, has_pts));
+        attr_lines.push(Line::from(Span::styled("└───────────────────┘", Style::default().fg(attr_border))));
 
         frame.render_widget(Paragraph::new(attr_lines), top_cols[2]);
 
-        // --- COMBAT STATS COLUMN (EXTENSIVE) ---
+        // === COMBAT STATS ROW (HORIZONTAL LAYOUT) ===
         let mut combat_lines: Vec<Line> = Vec::new();
-        combat_lines.push(Line::from(Span::styled("┌─ COMBAT STATISTICS ─────────────────────────┐", Style::default().fg(Color::White))));
 
-        // Row 1: Physical damage and armor
+        // Row 1: Header with main combat stats
         combat_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::White)),
-            Span::styled("Physical ", Style::default().fg(Color::Gray)),
-            Span::styled(format!("{:>3}", phys_damage), Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-            Span::styled("    Armor ", Style::default().fg(Color::Gray)),
-            Span::styled(format!("{:>3}", total_armor), Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD)),
-            Span::styled(format!(" ({:.0}% DR)", damage_reduction), Style::default().fg(Color::DarkGray)),
-            Span::styled("     │", Style::default().fg(Color::White)),
-        ]));
-
-        // Row 2: Crit and Dodge
-        combat_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::White)),
+            Span::styled("─── COMBAT ", Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+            Span::styled("│ ", Style::default().fg(Color::DarkGray)),
+            Span::styled("Phys ", Style::default().fg(Color::Gray)),
+            Span::styled(format!("{}", phys_damage), Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+            Span::styled(" │ ", Style::default().fg(Color::DarkGray)),
+            Span::styled("Armor ", Style::default().fg(Color::Gray)),
+            Span::styled(format!("{}", total_armor), Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD)),
+            Span::styled(format!(" ({:.0}%)", damage_reduction), Style::default().fg(Color::DarkGray)),
+            Span::styled(" │ ", Style::default().fg(Color::DarkGray)),
             Span::styled("Crit ", Style::default().fg(Color::Gray)),
-            Span::styled(format!("{:>5.1}%", total_crit), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-            if bonus_crit_dmg > 0 {
-                Span::styled(format!(" +{}%dmg", bonus_crit_dmg), Style::default().fg(Color::Yellow))
-            } else { Span::raw("       ") },
-            Span::styled("  Dodge ", Style::default().fg(Color::Gray)),
-            Span::styled(format!("{:>5.1}%", total_dodge), Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
-            Span::styled("        │", Style::default().fg(Color::White)),
+            Span::styled(format!("{:.1}%", total_crit), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            if bonus_crit_dmg > 0 { Span::styled(format!(" +{}%dmg", bonus_crit_dmg), Style::default().fg(Color::Yellow)) } else { Span::raw("") },
+            Span::styled(" │ ", Style::default().fg(Color::DarkGray)),
+            Span::styled("Dodge ", Style::default().fg(Color::Gray)),
+            Span::styled(format!("{:.1}%", total_dodge), Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+            if lifesteal > 0 { Span::styled(format!(" │ Steal {}%", lifesteal * 5), Style::default().fg(Color::Magenta)) } else { Span::raw("") },
         ]));
 
-        // Row 3: Elemental Damage header
-        combat_lines.push(Line::from(Span::styled("├─ Elemental Damage ────────────────────────────", Style::default().fg(Color::DarkGray))));
-
-        // Row 4: Fire, Ice, Lightning
+        // Row 2: Elemental damage and resistances
         combat_lines.push(Line::from(vec![
+            Span::styled("─── ELEMENT ", Style::default().fg(Color::DarkGray)),
             Span::styled("│ ", Style::default().fg(Color::DarkGray)),
             Span::styled("🔥 ", Style::default().fg(Color::Red)),
-            Span::styled(format!("{:>2}", fire_dmg), Style::default().fg(if fire_dmg > 0 { Color::Red } else { Color::DarkGray })),
-            Span::styled("   ❄ ", Style::default().fg(Color::Cyan)),
-            Span::styled(format!("{:>2}", ice_dmg), Style::default().fg(if ice_dmg > 0 { Color::Cyan } else { Color::DarkGray })),
-            Span::styled("   ⚡ ", Style::default().fg(Color::Yellow)),
-            Span::styled(format!("{:>2}", lightning_dmg), Style::default().fg(if lightning_dmg > 0 { Color::Yellow } else { Color::DarkGray })),
-            Span::styled("   ☠ ", Style::default().fg(Color::Green)),
-            Span::styled(format!("{:>2}", poison_dmg), Style::default().fg(if poison_dmg > 0 { Color::Green } else { Color::DarkGray })),
-            Span::styled("              │", Style::default().fg(Color::DarkGray)),
-        ]));
-
-        // Row 5: Lifesteal
-        if lifesteal > 0 {
-            combat_lines.push(Line::from(vec![
-                Span::styled("│ ", Style::default().fg(Color::DarkGray)),
-                Span::styled("Lifesteal ", Style::default().fg(Color::Gray)),
-                Span::styled(format!("{}%", lifesteal * 5), Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD)),
-                Span::styled("                                   │", Style::default().fg(Color::DarkGray)),
-            ]));
-        }
-
-        // Row 6: Resistances header
-        combat_lines.push(Line::from(Span::styled("├─ Resistances ─────────────────────────────────", Style::default().fg(Color::DarkGray))));
-
-        // Row 7: Fire, Ice, Poison resist
-        combat_lines.push(Line::from(vec![
-            Span::styled("│ ", Style::default().fg(Color::DarkGray)),
+            Span::styled(format!("{:<2}", fire_dmg), Style::default().fg(if fire_dmg > 0 { Color::Red } else { Color::DarkGray })),
+            Span::styled(" ❄ ", Style::default().fg(Color::Cyan)),
+            Span::styled(format!("{:<2}", ice_dmg), Style::default().fg(if ice_dmg > 0 { Color::Cyan } else { Color::DarkGray })),
+            Span::styled(" ⚡ ", Style::default().fg(Color::Yellow)),
+            Span::styled(format!("{:<2}", lightning_dmg), Style::default().fg(if lightning_dmg > 0 { Color::Yellow } else { Color::DarkGray })),
+            Span::styled(" ☠ ", Style::default().fg(Color::Green)),
+            Span::styled(format!("{:<2}", poison_dmg), Style::default().fg(if poison_dmg > 0 { Color::Green } else { Color::DarkGray })),
+            Span::styled(" ║ ", Style::default().fg(Color::DarkGray)),
+            Span::styled("RESIST ", Style::default().fg(Color::DarkGray)),
             Span::styled("🔥 ", Style::default().fg(Color::Red)),
-            Span::styled(format!("{:>2}%", fire_res), Style::default().fg(if fire_res > 0 { Color::Red } else { Color::DarkGray })),
+            Span::styled(format!("{}%", fire_res), Style::default().fg(if fire_res > 0 { Color::Red } else { Color::DarkGray })),
             Span::styled("  ❄ ", Style::default().fg(Color::Cyan)),
-            Span::styled(format!("{:>2}%", ice_res), Style::default().fg(if ice_res > 0 { Color::Cyan } else { Color::DarkGray })),
+            Span::styled(format!("{}%", ice_res), Style::default().fg(if ice_res > 0 { Color::Cyan } else { Color::DarkGray })),
             Span::styled("  ☠ ", Style::default().fg(Color::Green)),
-            Span::styled(format!("{:>2}%", poison_res), Style::default().fg(if poison_res > 0 { Color::Green } else { Color::DarkGray })),
-            Span::styled("                       │", Style::default().fg(Color::DarkGray)),
+            Span::styled(format!("{}%", poison_res), Style::default().fg(if poison_res > 0 { Color::Green } else { Color::DarkGray })),
         ]));
 
-        // Row 8: Bonuses header
-        combat_lines.push(Line::from(Span::styled("├─ Bonuses ─────────────────────────────────────", Style::default().fg(Color::DarkGray))));
-
-        // Row 9: XP, Gold, Magic Find
+        // Row 3: Bonuses
         combat_lines.push(Line::from(vec![
+            Span::styled("─── BONUSES ", Style::default().fg(Color::DarkGray)),
             Span::styled("│ ", Style::default().fg(Color::DarkGray)),
             Span::styled("XP ", Style::default().fg(Color::Gray)),
-            Span::styled(format!("+{:>2}%", bonus_xp), Style::default().fg(if bonus_xp > 0 { Color::Cyan } else { Color::DarkGray })),
-            Span::styled("  Gold ", Style::default().fg(Color::Gray)),
-            Span::styled(format!("+{:>2}%", gold_find), Style::default().fg(if gold_find > 0 { Color::Yellow } else { Color::DarkGray })),
-            Span::styled("  MF ", Style::default().fg(Color::Gray)),
-            Span::styled(format!("+{:>2}%", magic_find), Style::default().fg(if magic_find > 0 { Color::Magenta } else { Color::DarkGray })),
-            Span::styled("            │", Style::default().fg(Color::DarkGray)),
+            Span::styled(format!("+{}%", bonus_xp), Style::default().fg(if bonus_xp > 0 { Color::Cyan } else { Color::DarkGray })),
+            Span::styled(" │ ", Style::default().fg(Color::DarkGray)),
+            Span::styled("Gold ", Style::default().fg(Color::Gray)),
+            Span::styled(format!("+{}%", gold_find), Style::default().fg(if gold_find > 0 { Color::Yellow } else { Color::DarkGray })),
+            Span::styled(" │ ", Style::default().fg(Color::DarkGray)),
+            Span::styled("MagicFind ", Style::default().fg(Color::Gray)),
+            Span::styled(format!("+{}%", magic_find), Style::default().fg(if magic_find > 0 { Color::Magenta } else { Color::DarkGray })),
         ]));
 
-        combat_lines.push(Line::from(Span::styled("└───────────────────────────────────────────────┘", Style::default().fg(Color::DarkGray))));
+        frame.render_widget(Paragraph::new(combat_lines), rows[2]);
 
-        frame.render_widget(Paragraph::new(combat_lines), top_cols[3]);
-
-        // === BOTTOM ROW: Equipment | Item Details | Skills ===
+        // === BOTTOM ROW: Equipment+Skills (left) | Item Details (right) ===
         let bottom_cols = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
-                Constraint::Percentage(30),  // Equipment
-                Constraint::Percentage(40),  // Item Details
-                Constraint::Percentage(30),  // Skills
+                Constraint::Percentage(40),  // Equipment + Skills
+                Constraint::Percentage(60),  // Item Details
             ])
-            .split(rows[2]);
+            .split(rows[3]);
+
+        // Split left column into Equipment (top) and Skills (bottom)
+        let left_rows = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(12),  // Equipment (9 slots + header/footer)
+                Constraint::Min(6),      // Skills
+            ])
+            .split(bottom_cols[0]);
 
         // --- EQUIPMENT COLUMN ---
         let mut equip_lines: Vec<Line> = Vec::new();
@@ -5014,7 +4996,7 @@ impl App {
         }
         equip_lines.push(Line::from(Span::styled("╚══════════════════════════════╝", Style::default().fg(Color::Yellow))));
 
-        frame.render_widget(Paragraph::new(equip_lines), bottom_cols[0]);
+        frame.render_widget(Paragraph::new(equip_lines), left_rows[0]);
 
         // --- ITEM DETAILS COLUMN ---
         let mut detail_lines: Vec<Line> = Vec::new();
@@ -5282,7 +5264,7 @@ impl App {
         }
         skill_lines.push(Line::from(Span::styled("╚═══════════════════════════╝", Style::default().fg(Color::Magenta))));
 
-        frame.render_widget(Paragraph::new(skill_lines), bottom_cols[2]);
+        frame.render_widget(Paragraph::new(skill_lines), left_rows[1]);
     }
 
     fn render_fullmap_overlay(&self, frame: &mut Frame, game: &Game) {
