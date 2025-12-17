@@ -1,0 +1,31 @@
+# Build artifacts
+/target/
+
+# Cargo lock (optional - uncomment if this is a library)
+# Cargo.lock
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Log files
+*.log
+
+# Save files and user data
+saves/
+config.ron
+
+# Environment files
+.env
+.env.local
+
+# Debug files
+*.pdb
+
+# Backup files
+*.bak
+*.orig

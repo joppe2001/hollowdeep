@@ -1,0 +1,62 @@
+[package]
+name = "hollowdeep"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hollowdeep Team"]
+description = "A grimdark terminal roguelike RPG"
+license = "MIT"
+repository = "https://github.com/yourusername/hollowdeep"
+keywords = ["roguelike", "rpg", "terminal", "game"]
+categories = ["games"]
+
+[dependencies]
+# Terminal UI
+ratatui = "0.29"
+crossterm = "0.28"
+
+# ECS
+hecs = "0.10"
+
+# Serialization & Data
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ron = "0.8"
+
+# Audio
+kira = "0.9"
+
+# Scripting (Lua)
+mlua = { version = "0.10", features = ["lua54", "vendored"] }
+
+# Random & Noise
+rand = "0.8"
+noise = "0.9"
+
+# Graphics/Images
+image = "0.25"
+base64 = "0.22"
+
+# Utilities
+thiserror = "2.0"
+anyhow = "1.0"
+log = "0.4"
+env_logger = "0.11"
+directories = "5.0"
+
+# Async (for audio)
+parking_lot = "0.12"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,385 @@
+(
+    synergies: [
+        (
+            id: "flames_of_fury",
+            name: "Flames of Fury",
+            description: "Fire items empower your attacks with burning damage.",
+            tag: Fire,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        FireDamageOnHit(3),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        FireDamageOnHit(6),
+                        DamagePercent(0.1),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "frozen_heart",
+            name: "Frozen Heart",
+            description: "Ice items grant defensive bonuses and chill enemies.",
+            tag: Ice,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusArmor(5),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        BonusArmor(10),
+                        BonusHP(20),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "venomous",
+            name: "Venomous",
+            description: "Poison items inflict lasting damage.",
+            tag: Poison,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        PoisonDamageOnHit(4),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        PoisonDamageOnHit(8),
+                        CritChance(5.0),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "blood_rite",
+            name: "Blood Rite",
+            description: "Cultist items grant dark power at a cost.",
+            tag: Cultist,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusDamage(4),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        BonusDamage(8),
+                        Lifesteal(0.1),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "knights_valor",
+            name: "Knight\'s Valor",
+            description: "Knight items provide stalwart defense.",
+            tag: Knight,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusArmor(8),
+                    ],
+                ),
+                (
+                    required: 4,
+                    bonuses: [
+                        BonusArmor(15),
+                        BonusHP(30),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "shadows_edge",
+            name: "Shadow\'s Edge",
+            description: "Shadow items enhance critical strikes.",
+            tag: Shadow,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        CritChance(10.0),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        CritChance(20.0),
+                        BonusDamage(5),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "corrupted_soul",
+            name: "Corrupted Soul",
+            description: "Corruption grants great power but weakens your body.",
+            tag: Corruption,
+            tiers: [
+                (
+                    required: 1,
+                    bonuses: [
+                        Corruption(
+                            power: 5,
+                            penalty: 10,
+                        ),
+                    ],
+                ),
+                (
+                    required: 2,
+                    bonuses: [
+                        Corruption(
+                            power: 12,
+                            penalty: 20,
+                        ),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        Corruption(
+                            power: 25,
+                            penalty: 35,
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "berserker_rage",
+            name: "Berserker Rage",
+            description: "Berserker items grant more power as your health drops.",
+            tag: Berserker,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusDamage(5),
+                        CritChance(5.0),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        BonusDamage(10),
+                        DamagePercent(0.15),
+                        CritChance(10.0),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "arcane_mastery",
+            name: "Arcane Mastery",
+            description: "Arcane items enhance your magical abilities.",
+            tag: Arcane,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusMP(20),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        BonusMP(40),
+                        DamagePercent(0.12),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "assassins_mark",
+            name: "Assassin\'s Mark",
+            description: "Assassin items make your critical strikes devastating.",
+            tag: Assassin,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        CritChance(15.0),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        CritChance(25.0),
+                        BonusDamage(8),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "stalwart_guardian",
+            name: "Stalwart Guardian",
+            description: "Guardian items provide unmatched protection.",
+            tag: Guardian,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusArmor(8),
+                        BonusHP(15),
+                    ],
+                ),
+                (
+                    required: 4,
+                    bonuses: [
+                        BonusArmor(18),
+                        BonusHP(40),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "blood_hunger",
+            name: "Blood Hunger",
+            description: "Vampire items drain the life from your enemies.",
+            tag: Vampire,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        Lifesteal(0.08),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        Lifesteal(0.15),
+                        BonusHP(20),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "primal_fury",
+            name: "Primal Fury",
+            description: "Beast items awaken your primal instincts.",
+            tag: Beast,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusDamage(4),
+                        BonusHP(10),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        BonusDamage(8),
+                        BonusHP(25),
+                        CritChance(8.0),
+                    ],
+                ),
+            ],
+        ),
+        // ========== NEW SYNERGIES ==========
+        (
+            id: "storm_caller",
+            name: "Storm Caller",
+            description: "Lightning items crackle with devastating electrical energy.",
+            tag: Lightning,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        LightningDamageOnHit(5),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        LightningDamageOnHit(10),
+                        CritChance(12.0),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "divine_blessing",
+            name: "Divine Blessing",
+            description: "Holy items grant protection from the divine.",
+            tag: Holy,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusHP(25),
+                        BonusArmor(5),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        BonusHP(50),
+                        BonusArmor(10),
+                        BonusMP(20),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "twin_fangs",
+            name: "Twin Fangs",
+            description: "Dual wielded weapons strike with lethal precision.",
+            tag: DualWield,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        CritChance(12.0),
+                        BonusDamage(3),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        CritChance(20.0),
+                        BonusDamage(6),
+                        DamagePercent(0.08),
+                    ],
+                ),
+            ],
+        ),
+        (
+            id: "mighty_swing",
+            name: "Mighty Swing",
+            description: "Two-handed weapons deal devastating blows.",
+            tag: TwoHanded,
+            tiers: [
+                (
+                    required: 2,
+                    bonuses: [
+                        BonusDamage(8),
+                    ],
+                ),
+                (
+                    required: 3,
+                    bonuses: [
+                        BonusDamage(15),
+                        DamagePercent(0.12),
+                    ],
+                ),
+            ],
+        ),
+    ],
+)
