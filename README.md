@@ -23,6 +23,89 @@ A grimdark terminal roguelike RPG built in Rust.
 └────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+## Quick Start
+
+### Windows
+
+**Prerequisites:** [Visual Studio C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (select "Desktop development with C++")
+
+```powershell
+# Clone the repository
+git clone https://github.com/yourusername/hollowdeep.git
+cd hollowdeep
+
+# Option 1: Use the install script (installs Rust if needed)
+.\install.ps1
+
+# Option 2: Manual build (requires Rust)
+cargo run --release
+```
+
+Or double-click `install.bat` from Explorer.
+
+### macOS
+
+**zsh (default):**
+```zsh
+# Clone the repository
+git clone https://github.com/yourusername/hollowdeep.git
+cd hollowdeep
+
+# Option 1: Use the install script (installs Rust if needed)
+./install.sh
+
+# Option 2: Manual build (requires Rust and Xcode CLI tools)
+xcode-select --install  # if not already installed
+cargo run --release
+```
+
+**bash:**
+```bash
+git clone https://github.com/yourusername/hollowdeep.git
+cd hollowdeep
+bash install.sh
+# or: cargo run --release
+```
+
+### Linux
+
+**Debian/Ubuntu:**
+```bash
+# Install dependencies
+sudo apt update
+sudo apt install build-essential libasound2-dev
+
+# Clone and build
+git clone https://github.com/yourusername/hollowdeep.git
+cd hollowdeep
+./install.sh
+```
+
+**Fedora:**
+```bash
+sudo dnf install gcc alsa-lib-devel
+git clone https://github.com/yourusername/hollowdeep.git
+cd hollowdeep
+./install.sh
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -S base-devel alsa-lib
+git clone https://github.com/yourusername/hollowdeep.git
+cd hollowdeep
+./install.sh
+```
+
+### Recommended Terminals
+
+For the best visual experience (sprite rendering support):
+- **macOS:** Ghostty, Kitty, WezTerm, iTerm2
+- **Linux:** Ghostty, Kitty, WezTerm
+- **Windows:** Windows Terminal, WezTerm
+
+---
+
 ## Features
 
 ### Implemented (Phase 1)
@@ -58,22 +141,6 @@ A grimdark terminal roguelike RPG built in Rust.
 - [ ] Save/load system
 - [ ] Lua mod support
 - [ ] Audio (kira)
-
-## Installation
-
-### Requirements
-
-- Rust 1.70+ (install via [rustup](https://rustup.rs))
-- A terminal with true color support
-- **Recommended:** Ghostty, Kitty, WezTerm, or iTerm2 for sprite rendering
-
-### Build & Run
-
-```bash
-git clone https://github.com/yourusername/hollowdeep.git
-cd hollowdeep
-cargo run --release
-```
 
 ## Controls
 
