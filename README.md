@@ -29,19 +29,21 @@ A grimdark terminal roguelike RPG built in Rust.
 
 **Prerequisites:** [Visual Studio C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (select "Desktop development with C++")
 
+**Option 1: Download from Releases**
+1. use `install-windows.cmd` from the root of the repository
+2. Double-click to run (installs Rust if needed, then builds the game)
+
+**Option 2: Clone and Build**
 ```powershell
-# Clone the repository
 git clone https://github.com/yourusername/hollowdeep.git
 cd hollowdeep
 
-# Option 1: Use the install script (installs Rust if needed)
-.\install.ps1
+# Use the installer (installs Rust if needed)
+.\install-windows.cmd
 
-# Option 2: Manual build (requires Rust)
+# Or manual build (requires Rust already installed)
 cargo run --release
 ```
-
-Or double-click `install.bat` from Explorer.
 
 ### macOS
 
@@ -251,10 +253,6 @@ assets/sprites/
 | Bleeding Crypts | 6-10 | Blood cultists, corruption | Cellular automata |
 | Hollow Cathedral | 11-15 | Fallen angels, vertical | Large open areas |
 | The Abyss | 16-20 | Eldritch horrors, final boss | Mixed |
-
-## License
-
-MIT License - See LICENSE file for details.
 
 ## Contributing
 
